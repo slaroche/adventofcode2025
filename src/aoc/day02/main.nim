@@ -1,11 +1,13 @@
 import commons/inpututils
+import commons/timeit
 import os
 import strutils
+import sequtils
 import sugar
 import math
+import strformat
+import times
 
-# let inputs = loadExample(currentSourcePath().parentDir())
-let inputs = loadInput(currentSourcePath().parentDir())
 
 func getIds(rangeItem: string): seq[int] =
     let 
@@ -18,28 +20,20 @@ func isMirrored(id: string): bool =
     if id.len mod 2 != 0: return false
     id[0..id.len div 2 - 1] == id[id.len div 2..^1]
 
-func sliceOnIndex(str: string, index: int, rest: bool = false): string =
-    if rest: str[index..^1]
-    else: str[0..index - 1]
-
 func splitGroup(str: string, size: int): seq[string] = 
     var rest: string = str
     while rest.len > 0:
-        result.add(sliceOnIndex(rest, size))
-        rest = sliceOnIndex(rest, size, rest=true)
+        result.add(rest[0..<size])
+        rest = rest[size..^1]
 
-func same(parts: seq[string]): bool =
+func same[T: string | char](parts: seq[T]): bool =
     for i in 1..parts.len - 1:
         if parts[i - 1] != parts[i]: return false
-    return true
-
-func toChar(str: string): seq[string] =
-    for char in str:
-        result.add($char)
+    true
 
 func isRepeated(id: string): bool =
     if id.len == 1: return false
-    if same(toChar(id)): return true
+    if same(id.toSeq()): return true
     if id.len == 3: return false
 
     var i = 1
@@ -51,26 +45,32 @@ func isRepeated(id: string): bool =
         let parts = splitGroup(id, size=i)
         if same(parts): return true
 
-    discard
+    false
 
 
-let parts = collect:
-    for line in inputs:
-        for part in line:
-            part.split(',')
+if isMainModule:
+    # let inputs = loadExample(currentSourcePath().parentDir())
+    let inputs = loadInput(currentSourcePath().parentDir())
 
+    let parts = collect:
+        for line in inputs:
+            for part in line:
+                part.split(',')
 
-var invalidIds: seq[int] = @[]
+    var invalidIds: seq[int] = @[]
 
-for currentRange in parts:
-    for id in getIds(currentRange):
-        if isMirrored($id): invalidIds.add(id)
-                
-echo "puzzle 1: ", sum(invalidIds)
+    timeIt "puzzle 1":
+        for currentRange in parts:
+            for id in currentRange.getIds():
+                if isMirrored($id): invalidIds.add(id)
+                    
+        echo fmt"solution: {sum(invalidIds)}"
 
-invalidIds = @[]
-for currentRange in parts:
-    for id in getIds(currentRange):
-        if isRepeated($id): invalidIds.add(id)
+    invalidIds = @[]
 
-echo "puzzle 2: ", sum(invalidIds)
+    timeIt "puzzle 2":
+        for currentRange in parts:
+            for id in currentRange.getIds():
+                if isRepeated($id): invalidIds.add(id)
+
+        echo fmt"solution: {sum(invalidIds)}"
