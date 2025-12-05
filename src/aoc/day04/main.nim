@@ -42,7 +42,6 @@ proc reduce(grid: seq[seq[char]]): tuple[total: int, grid: seq[seq[char]]] =
 
 when isMainModule:
     let inputs = loadExample(currentSourcePath().parentDir())
-    # let inputs = loadInput(currentSourcePath().parentDir())
 
     let grid = collect:
         for line in inputs:
