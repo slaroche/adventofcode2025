@@ -40,7 +40,6 @@ when isMainModule:
 
     echo ""
 
-    totalValidIngredient = 0
 
     timeIt "puzzle 2":
         var mergedRanges: seq[tuple[start, to: int]] = @[]
@@ -59,7 +58,9 @@ when isMainModule:
                 proc (x: tuple[start, to: int]): bool = x.start > lowerEnd
             )
 
+        totalValidIngredient = 0
         for (startId, endId) in mergedRanges:
             totalValidIngredient += (endId - startId) + 1
+
         echo "solution: $#" % [$totalValidIngredient]
 
