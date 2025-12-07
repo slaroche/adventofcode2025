@@ -5,8 +5,6 @@ import strutils
 import sugar
 import strformat
 import math
-import sequtils
-import algorithm
 
 type Problem = object
   numbers: seq[string]
