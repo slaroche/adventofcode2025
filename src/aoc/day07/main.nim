@@ -1,9 +1,9 @@
 import commons/inpututils
 import commons/timeit
 import os
-import sequtils
 import sugar
 import strformat
+import math
 
 
 when isMainModule:
@@ -34,44 +34,35 @@ when isMainModule:
 
     timeIt "puzzle 2":
         total = 0
-        var : seq[seq[char]] = collect:
+        var world: seq[seq[int]] = collect:
             for line in inputs:
-                line[0].toSeq()
-        var maniworlds: seq[seq[seq[char]]] = @[firstWorld]
+                var newLine: seq[int] = @[]
+                for space in line[0]:
+                    if space == 'S':
+                        newLine.add(1)
+                    elif space == '.':
+                        newLine.add(0)
+                    else:
+                        newLine.add(-1)
+                newLine
 
-        var x = 0
-        while true:
-            var foundStart = false
-            for i in 1..<maniworlds[x].len:
-                for j in 0..<maniworlds[x][i].len:
-                    if not foundStart and maniworlds[x][i - 1][j] == 'S':
-                        foundStart = true
-                        maniworlds[x][i][j] = '|'
-                        maniworlds[x][i - 1][j] = '|'
-                    elif not foundStart:
-                        continue
-                    if maniworlds[x][i][j] == '^' and maniworlds[x][i - 1][j] == '|':
-                        var newWorld = maniworlds[x]
-                        newWorld[i][j + 1] = 'S'
-                        maniworlds.add(newWorld)
-                        maniworlds[x][i][j - 1] = '|'
-                    elif maniworlds[x][i - 1][j] == '|':
-                        maniworlds[x][i][j] = '|'
-            # if x == 2:
-            #     for line in maniworlds[x]:
-            #         echo line
-                
-            #     echo fmt"currentCount: {currentCount}, maniworlds.len: {maniworlds.len}"
-            #     quit 0
+        for i in 1..<world.len:
+            for j in 0..<world[i].len:
+                if world[i][j] == -1:
+                    var num = world[i - 1][j]
+                    var right = world[i][j - 1]
+                    var left = world[i][j + 1]
+                    world[i][j - 1] = num + right
+                    world[i][j + 1] = num + left
+                elif world[i - 1][j] > 0:
+                    world[i][j] = world[i - 1][j] + world[i][j]
 
-            x += 1
-            if maniworlds.len == x:
-                break
-        # var index = 0
-        # for world in maniworlds:
-        #     echo fmt"world: {index}"
-        #     index += 1
-        #     for line in world:
-        #         echo line
-        #     echo ""
-        echo fmt"solution: {maniworlds.len}"
+        # for line in world:
+        #     var i = ""
+        #     for space in line:
+        #         var j = if space == -1: "^" 
+        #             elif space == 0: "." 
+        #             else: $space
+        #         i &= j
+        #     echo i
+        echo fmt"solution: {sum(world[^1])}"
