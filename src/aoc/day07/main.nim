@@ -33,7 +33,6 @@ when isMainModule:
 
 
     timeIt "puzzle 2":
-        total = 0
         var world: seq[seq[int]] = collect:
             for line in inputs:
                 var newLine: seq[int] = @[]
@@ -57,12 +56,4 @@ when isMainModule:
                 elif world[i - 1][j] > 0:
                     world[i][j] = world[i - 1][j] + world[i][j]
 
-        # for line in world:
-        #     var i = ""
-        #     for space in line:
-        #         var j = if space == -1: "^" 
-        #             elif space == 0: "." 
-        #             else: $space
-        #         i &= j
-        #     echo i
         echo fmt"solution: {sum(world[^1])}"
