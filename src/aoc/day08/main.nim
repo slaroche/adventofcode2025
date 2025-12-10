@@ -7,13 +7,18 @@ import strutils
 import sequtils
 import math
 import algorithm
-import sets
+import options
 
 type Point = tuple[x, y, z: int]
 type Conn = tuple[dis: int, a, b: Point]
 
 func distance(a, b: Point): int =
     int(sqrt(float((a.x - b.x)^2 + (a.y - b.y)^2 + (a.z - b.z)^2)))
+
+func findIndex(clusters: seq[seq[Point]]; junc: Point): Option[int] =
+    for index in 0..<clusters.len: 
+        if junc in clusters[index]: 
+            return index.some()
 
 when isMainModule:
     # let inputs = loadExample(currentSourcePath().parentDir())
@@ -38,28 +43,20 @@ when isMainModule:
 
         var clusters: seq[seq[Point]] = @[]
         for c in connections[0..<MaxPairs]:
-            var indexA = -1
-            var indexB = -1
-            for index in 0..<clusters.len: 
-                if c.a in clusters[index]: 
-                    indexA = index
-                    break
-            for index in 0..<clusters.len: 
-                if c.b in clusters[index]:
-                    indexB = index
-                    break
-            if indexA == -1 and indexB == -1: 
+            var indexA = clusters.findIndex(c.a)
+            var indexB = clusters.findIndex(c.b)
+            if indexA.isNone() and indexB.isNone(): 
                 clusters.add(@[c.a, c.b])
-            elif indexA == indexB: 
+            elif indexA.isSome() and indexB.isNone():
+                clusters[indexA.get()].add(c.b)
+            elif indexA.isNone() and indexB.isSome():
+                clusters[indexB.get()].add(c.a)
+            elif indexA.get() == indexB.get(): 
                 continue
-            elif indexA != -1 and indexB == -1:
-                clusters[indexA].add(c.b)
-            elif indexA == -1 and indexB != -1:
-                clusters[indexB].add(c.a)
             else:
-                for b in clusters[indexB]:
-                    clusters[indexA].add(b)
-                clusters.delete(indexB)
+                for b in clusters[indexB.get()]:
+                    clusters[indexA.get()].add(b)
+                clusters.delete(indexB.get())
 
         clusters.sort(proc (a, b: seq[Point]): int = cmp(b.len, a.len))
         # for i in 0..<3:

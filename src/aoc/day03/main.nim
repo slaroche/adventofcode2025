@@ -12,21 +12,20 @@ import malebolgia
 const JoltageCount = 12
 
 
-type
-    FChannel[T] = object
-        channel: Channel[T]
-        done: bool = false
+type FChannel[T] = ref object of RootObj
+    channel: Channel[T]
+    done: bool = false
 
-    Bank = object
-        value: seq[int]
+type Bank = object
+    value: seq[int]
 
 
-proc open[T](self: var FChannel[T]; maxItems: int = 0) = self.channel.open(maxItems)
-proc close[T](self: var FChannel[T]) = self.channel.close()
-proc trySend[T](self: var FChannel[T], msg: T): bool = self.channel.trySend(msg)
-proc send[T](self: var FChannel[T], msg: T) = self.channel.send(msg)
-proc tryRecv[T](self: var FChannel[T]): tuple[dataAvailable: bool, msg: T] = self.channel.tryRecv()
-proc recv[T](self: var FChannel[T]): T = self.channel.recv()
+proc open[T](self: FChannel[T]; maxItems: int = 0) = self.channel.open(maxItems)
+proc close[T](self: FChannel[T]) = self.channel.close()
+proc trySend[T](self: FChannel[T], msg: T): bool = self.channel.trySend(msg)
+proc send[T](self: FChannel[T], msg: T) = self.channel.send(msg)
+proc tryRecv[T](self: FChannel[T]): tuple[dataAvailable: bool, msg: T] = self.channel.tryRecv()
+proc recv[T](self: FChannel[T]): T = self.channel.recv()
 
 
 func openBatteries(first, second: char): int = 
@@ -42,7 +41,9 @@ func findJoltage(bank: seq[int]): int =
             bat = bank[i]
 
 
-proc toBank(bankStr: string): Bank = Bank(value: bankStr.toSeq().map(proc (x: char): int = parseInt($x)))
+proc toBank(bankStr: string): Bank = 
+    Bank(value: bankStr.toSeq().map(proc (x: char): int = parseInt($x)))
+
 proc open(bank: Bank): int = 
     var 
         joltage: seq[string] = @[]
@@ -57,17 +58,17 @@ proc open(bank: Bank): int =
     joltage.join("").parseInt()
 
 
-proc consume(chan: ptr FChannel[Bank]; joltagesChan: ptr Channel[int]) {.gcsafe.} =
+proc consume(chan: FChannel[Bank]; joltagesChan: ptr Channel[int]) {.gcsafe.} =
     while true:
-        let (available, bank) = chan[].tryRecv()
-        if not available and chan[].done: break
+        let (available, bank) = chan.tryRecv()
+        if not available and chan.done: break
         elif available: joltagesChan[].send(bank.open())
 
 
-proc produce(chan: ptr FChannel[Bank]; banks: seq[string]) {.gcsafe.} =
+proc produce(chan: FChannel[Bank]; banks: seq[string]) {.gcsafe.} =
     for bankStr in banks: 
-        chan[].send(toBank(bankStr))
-    chan[].done = true
+        chan.send(toBank(bankStr))
+    chan.done = true
 
 
 if isMainModule:
@@ -109,10 +110,10 @@ if isMainModule:
         defer: joltagesChan.close()
 
         m.awaitAll:
-            m.spawn produce(addr banksChan, banks)
+            m.spawn produce(banksChan, banks)
 
             for _ in 0..countProcessors():
-                m.spawn consume(addr banksChan, addr joltagesChan)
+                m.spawn consume(banksChan, addr joltagesChan)
 
         var totalJoltages = 0
         for _ in 0..<joltagesChan.peek():
