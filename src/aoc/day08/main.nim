@@ -1,4 +1,4 @@
-import commons/inpututils
+import commons/utils
 import commons/timeit
 import os
 import sugar
@@ -7,60 +7,67 @@ import strutils
 import sequtils
 import math
 import algorithm
+import sets
 
-func distance(a , b: tuple[x, y, z: int]): int =
+type Point = tuple[x, y, z: int]
+type Conn = tuple[dis: int, a, b: Point]
+
+func distance(a, b: Point): int =
     int(sqrt(float((a.x - b.x)^2 + (a.y - b.y)^2 + (a.z - b.z)^2)))
 
 when isMainModule:
     # let inputs = loadExample(currentSourcePath().parentDir())
     # const MaxPairs = 10
-    let inputs = loadInput(currentSourcePath().parentDir())
+    let inputs = loadInput(currentSourcePath().parentDir()) 
     const MaxPairs = 1000
 
     timeIt "puzzle 1":
-        let junc: seq[tuple[x, y, z: int]] = collect:
+        let junc: seq[Point] = collect:
             for line in inputs:
                 let values = line[0].split(',').map(
                     proc (x: string): int = x.parseInt()
                 )
                 (values[0], values[1], values[2])
         
-        type Conn = tuple[dis: int,a, b: tuple[x, y, z: int]]
-        var conn: seq[Conn] = collect:
+        var connections: seq[Conn] = collect:
             for i in 0..<junc.len:
                 for j in i+1..<junc.len:
                     (distance(junc[i], junc[j]), junc[i], junc[j])
         
-        conn.sort(proc (a, b: Conn): int = cmp(a.dis, b.dis))
-        conn = conn[0..<MaxPairs]
-        
-        var clusters: seq[seq[tuple[x, y, z: int]]] = @[]
-        for con in conn:
-            for i in 0..<clusters.len:
-                if con.a in clusters[i] and con.b in clusters[i]:
+        connections.sort(proc (a, b: Conn): int = cmp(a.dis, b.dis))
+
+        var clusters: seq[seq[Point]] = @[]
+        for c in connections[0..<MaxPairs]:
+            var indexA = -1
+            var indexB = -1
+            for index in 0..<clusters.len: 
+                if c.a in clusters[index]: 
+                    indexA = index
                     break
-                if con.a in clusters[i]:
-                    clusters[i].add(con.b)
+            for index in 0..<clusters.len: 
+                if c.b in clusters[index]:
+                    indexB = index
                     break
-                if con.b in clusters[i]:
-                    clusters[i].add(con.a)
-                    break
+            if indexA == -1 and indexB == -1: 
+                clusters.add(@[c.a, c.b])
+            elif indexA == indexB: 
+                continue
+            elif indexA != -1 and indexB == -1:
+                clusters[indexA].add(c.b)
+            elif indexA == -1 and indexB != -1:
+                clusters[indexB].add(c.a)
+            else:
+                for b in clusters[indexB]:
+                    clusters[indexA].add(b)
+                clusters.delete(indexB)
 
-            clusters.add(@[con.a, con.b])
-        
-
-
-        let clusterLens = collect:
-            for cluster in clusters:
-                cluster.len
-
-        let biggestCSize = clusterLens.sorted().reversed()[0..<3]
-        echo biggestCSize
+        clusters.sort(proc (a, b: seq[Point]): int = cmp(b.len, a.len))
+        # for i in 0..<3:
+        #     echo fmt"cluster: {clusters[i].len}"
         var total = 1
-        for size in biggestCSize:
-            total *= size
-        
-        echo fmt"solution: {total}"
+        for x in clusters[0..<3]:
+            total *= x.len
+        echo fmt"clusters: {total}"
 
 
     echo ""

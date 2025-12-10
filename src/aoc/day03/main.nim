@@ -1,4 +1,4 @@
-import commons/inpututils
+import commons/utils
 import commons/timeit
 import os
 import strutils
