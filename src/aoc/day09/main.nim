@@ -9,10 +9,7 @@ import math
 import algorithm
 
 
-when isMainModule:
-    let inputs = loadExample(currentSourcePath().parentDir())
-    # let inputs = loadInput(currentSourcePath().parentDir())
-
+proc partA(inputs: seq[seq[string]]): int =
     var points: seq[tuple[x, y: int]] = collect:
         for line in inputs:
             let values = line[0].split(',').map(
@@ -22,36 +19,25 @@ when isMainModule:
 
     let height = points.map(proc (x: tuple[x, y: int]): int = x.x).max() + 1 
     let width = points.map(proc (x: tuple[x, y: int]): int = x.y).max() + 1
+    for i in 0..<points.len:
+        for j in i + 1..<points.len:
+            let a = points[i]
+            let b = points[j]
+            result = max(
+                result,
+                (abs(a.x - b.x) + 1) * (abs(a.y - b.y) + 1),
+            )
+
+proc partB(inputs: seq[seq[string]]): int = 0
+
+when isMainModule:
+    let inputs = loadExample(currentSourcePath().parentDir())
+    # let inputs = loadInput(currentSourcePath().parentDir())
 
     timeIt "puzzle 1":
-        var total = 0
-        for i in 0..<points.len:
-            for j in i + 1..<points.len:
-                let a = points[i]
-                let b = points[j]
-                total = max(
-                    total,
-                    (abs(a.x - b.x) + 1) * (abs(a.y - b.y) + 1),
-                )
-                
-        echo fmt"solution: {total}"
-
-
+        echo fmt"solution: {partA(inputs)}"
 
     echo ""
 
     timeIt "puzzle 2":
-        echo fmt"width: {width}, height: {height}"
-        var grid: seq[string] = @[]
-        for i in 0..<width:
-            var line: string = ""
-            for j in 0..<height:
-                echo fmt"i: {i}, j: {j}"
-                if (i, j) in points:
-                    line &= "#"
-                else:
-                    line &= "."
-            grid.add(line)
-        for line in grid:
-            echo line
-        echo fmt"solution: {0}"
+        echo fmt"solution: {partB(inputs)}"
