@@ -15,6 +15,6 @@ proc loadInput*(parentDir: string): seq[seq[string]] =  load(parentDir, "input.t
 proc loadExample*(parentDir: string): seq[seq[string]] = load(parentDir, "example.txt")
 
 
-iterator enumerate*[T](s: seq[T]): tuple[index: int, item:T] {.inline.} =
+iterator enumerate*[T](s: seq[T]): tuple[index: int, item: T] {.inline.} =
   for i in 0..<s.len:
     yield (i, s[i])
