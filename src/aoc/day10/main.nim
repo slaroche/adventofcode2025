@@ -34,19 +34,12 @@ func newMachine(
     result.joltage = joltage
 
 
-func distance(a: string): int =
-    return a.strip(chars = {'.'}).len
+func distance(a: string): int = a.strip(chars = {'.'}).len
 
 
 func flip(light: char): char =
     if light == '#': return '.'
     if light == '.': return '#'
-
-
-func first[T](l: seq[T]): Option[T] =
-    for item in l:
-        return some(item)
-    return none(T)
 
 
 func press(lights: string, buttons: Button): string =
@@ -84,51 +77,13 @@ proc partA(inputs: seq[seq[string]]): int =
     for machine in machines:
         result += machine.totalPress()
 
-# proc partA(inputs: seq[seq[string]]): int =
-#     let machines = collect:
-#         for input in inputs:
-#             newMachine(input[0][1..^2], input[1..^2], input[^1])
-
-#     for machine in machines:
-#         var q = machine.lights
-#         var c = 0
-#         echo fmt"machine: {machine.repr}"
-#         var buttonsPressed: seq[Button] = @[]
-#         while q.distance > 0:
-#             c += 1
-#             if c > 10: 
-#                 break
-
-#             var lastButton = machine.buttons.filter(proc (
-#                     x: Button): bool = x notin buttonsPressed).first()
-#             if lastButton.isNone():
-#                 break
-
-#             let og = q
-#             var current = q
-#             for button in machine.buttons:
-#                 if button in buttonsPressed:
-#                     continue
-
-#                 if current.distance > q.press(button).distance:
-#                     current = q.press(button)
-#                     lastButton = some(button)
-
-#             buttonsPressed.add(lastButton.get())
-#             q = q.press(lastButton.get())
-#             echo fmt"og: {og}, q: {q}, lastButton: {lastButton.get()}"
-#         echo fmt"buttonsPressed: {buttonsPressed.len}"
-#         quit 0
-
-#     return 0
-
 
 proc partB(inputs: seq[seq[string]]): int = 0
 
 
 when isMainModule:
-    # let inputs = loadExample(currentSourcePath().parentDir())
-    let inputs = loadInput(currentSourcePath().parentDir())
+    let inputs = loadExample(currentSourcePath().parentDir())
+    # let inputs = loadInput(currentSourcePath().parentDir())
 
     timeIt "puzzle 1":
         echo fmt"solution: {partA(inputs)}"
