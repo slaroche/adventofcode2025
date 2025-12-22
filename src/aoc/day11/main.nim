@@ -24,4 +24,4 @@ when isMainModule:
     echo ""
 
     timeIt "puzzle 2":
-        echo fmt"solution: {partB(inputs)}"
+        echo &"solution: {partB(inputs)}"

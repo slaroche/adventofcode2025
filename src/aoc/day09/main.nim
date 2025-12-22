@@ -13,6 +13,14 @@ type Tile = object
 type Rec = ref object
     a, b: Tile
 
+type Edge = object
+    a, b: Tile
+
+func edgesContained(s: seq[Edge], e: Edge): bool =
+    for edge in s:
+        if edge.a in @[e.a, e.b] and edge.b in @[e.a, e.b]:
+            return true
+    return false
 
 func aria(a, b: Tile): int {.inline.} =
     (abs(a.x - b.x) + 1) * (abs(a.y - b.y) + 1)
@@ -51,6 +59,22 @@ proc partB(inputs: seq[seq[string]]): int =
                 proc (x: string): int = x.parseInt()
             )
             Tile(x: values[0], y: values[1])
+    
+    var edges: seq[Edge] = @[]
+    for i, a in enumerate tiles:
+        var inline: seq[Tile] = @[]
+        for b in tiles[i + 1..^1]:
+            if a.x == b.x or a.y == b.y:
+                inline.add(b)
+        if inline.len > 0:
+            for b in inline:
+                let e = Edge(a: a, b: b)
+                if edgesContained(edges, e):
+                    continue
+                edges.add(e)
+
+    for e in edges:
+        echo e
 
     var recs: seq[Rec] = collect:
         for (i, a) in enumerate(tiles):
@@ -73,9 +97,9 @@ when isMainModule:
     # let inputs = loadInput(currentSourcePath().parentDir())
 
     timeIt "puzzle 1":
-        echo fmt"solution: {partA(inputs)}"
+        echo &"solution: {partA(inputs)}"
 
     echo ""
 
     timeIt "puzzle 2":
-        echo fmt"solution: {partB(inputs)}"
+        echo &"solution: {partB(inputs)}"
